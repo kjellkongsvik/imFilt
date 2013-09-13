@@ -6,14 +6,14 @@
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
-#include "work.h"
+#include "readWriteFile.h"
 
 using namespace std;
 
 
 int main(int argc, char** argv) {
 
-	Work *w = new Work(argc, argv);
+	ReadWriteFile *w = new ReadWriteFile(argv[0], argv[1], argv[2]);
 
 	return 0;
 }
