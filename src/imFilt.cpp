@@ -54,9 +54,9 @@ int main(int argc, char** argv) {
 
 			for(int ip=1;ip<size;ip++){
 				int l;
-				MPI_Recv(&l, 1, MPI_INT, ip, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				MPI_Recv(&l, 1, MPI_INT, ip, ip, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 				void* d = malloc(l);
-				MPI_Recv(d, l, MPI_CHAR, ip, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				MPI_Recv(d, l, MPI_CHAR, ip, ip, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 				Blob blob_(d, l);
 				Image im(blob_);
 				image.draw(DrawableCompositeImage((nx/size)*ip,0,im));
@@ -74,14 +74,10 @@ int main(int argc, char** argv) {
 			Image im(blob);
 			im.blur(radius, weight);
 			im.write(&blob);
-			MPI_Send(&l, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-			MPI_Send((void*)blob.data(), blob.length(), MPI_CHAR, 0, 0, MPI_COMM_WORLD);
-			//			//
+			MPI_Send(&l, 1, MPI_INT, 0, rank, MPI_COMM_WORLD);
+			MPI_Send((void*)blob.data(), blob.length(), MPI_CHAR, 0, rank, MPI_COMM_WORLD);
 		}
 
-
-
-		//		Work *w = new Work(image, rank, size);
 
 		if(rank==0){
 			image.write( argv[2] );
