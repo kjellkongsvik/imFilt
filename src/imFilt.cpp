@@ -16,6 +16,8 @@ int main(int argc, char** argv) {
 
 	int rank, size;
 
+	int radius = 70;
+	float weight = 10;
 	MPI_Init (&argc, &argv);
 
 	MPI_Comm_rank (MPI_COMM_WORLD, &rank);
@@ -32,32 +34,33 @@ int main(int argc, char** argv) {
 
 			int nx = image.columns();
 			int ny = image.rows();
-			int l=0;
 			Image im0(image);
 			im0.crop(Geometry(nx/size, ny, 0, 0));
 
-			if(size>1){
-				Image im1(image);
+			for(int ip=1;ip<size;ip++){
+				Image im(image);
 
-				im1.crop(Geometry(nx/size, ny, nx/size, 0));
+				im.crop(Geometry(nx/size, ny, (nx/size)*ip, 0));
 
 				Blob blob;
-				im1.write(&blob);
-				l = blob.length();
-				MPI_Send(&l, 1, MPI_INT, 1, 0, MPI_COMM_WORLD);
-				MPI_Send((void*)blob.data(), blob.length(), MPI_CHAR, 1, 0, MPI_COMM_WORLD);
+				im.write(&blob);
+				int l = blob.length();
+				MPI_Send(&l, 1, MPI_INT, ip, 0, MPI_COMM_WORLD);
+				MPI_Send((void*)blob.data(), blob.length(), MPI_CHAR, ip, 0, MPI_COMM_WORLD);
 			}
 
-			im0.blur(200,10);
+			im0.blur(radius, weight);
 			image.draw(DrawableCompositeImage(0,0,im0));
 
-			if(size>1)
-			{
+			for(int ip=1;ip<size;ip++){
+				int l;
+				MPI_Recv(&l, 1, MPI_INT, ip, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 				void* d = malloc(l);
-				MPI_Recv(d, l, MPI_CHAR, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				MPI_Recv(d, l, MPI_CHAR, ip, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 				Blob blob_(d, l);
-				Image im1_(blob_);
-				image.draw(DrawableCompositeImage(nx/size,0,im1_));
+				Image im(blob_);
+				image.draw(DrawableCompositeImage((nx/size)*ip,0,im));
+				free(d);
 			}
 		}
 		if(rank>0){
@@ -68,11 +71,12 @@ int main(int argc, char** argv) {
 			MPI_Recv(d, l, MPI_CHAR, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 			Blob blob(d, l);
-			Image im1(blob);
-			im1.blur(200,10);
-			im1.write(&blob);
+			Image im(blob);
+			im.blur(radius, weight);
+			im.write(&blob);
+			MPI_Send(&l, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
 			MPI_Send((void*)blob.data(), blob.length(), MPI_CHAR, 0, 0, MPI_COMM_WORLD);
-//			//
+			//			//
 		}
 
 
