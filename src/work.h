@@ -13,10 +13,10 @@
 using namespace std;
 using namespace Magick;
 
-class ReadWriteFile {
+class Work {
 
 public:
-	ReadWriteFile(char* argv, char* in ,char* out);
+	Work(Image image, int rank, int size);
 private:
 
 };

@@ -4,5 +4,5 @@
 
 USER_OBJS :=
 
-LIBS := -lMagickCore -lMagick++
+LIBS := -lMagickCore -lmpi -lMagick++
 
