@@ -16,8 +16,8 @@ int main(int argc, char** argv) {
 
 	int rank, size;
 
-	int radius = 70;
-	float weight = 10;
+	int radius = atoi(argv[2]);
+	float weight = atof(argv[3]);
 	MPI_Init (&argc, &argv);
 
 	MPI_Comm_rank (MPI_COMM_WORLD, &rank);
